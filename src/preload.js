@@ -1,43 +1,45 @@
-const { remote } = require('electron')
-const fs = require('fs-extra')
+const { remote, shell, ipcRenderer } = require('electron')
+const path = require('path')
 
-const { STATE_PATH, getState, resetState } = require('./state')
+const { STATE_PATH, resetState, restoreState, saveState } = require('./state')
 
 window.windows95 = {
   STATE_PATH,
-
+  restoreState,
   resetState,
+  saveState,
 
-  async saveState () {
-    return new Promise((resolve) => {
-      if (!window.emulator || !window.emulator.save_state) {
-        return resolve()
-      }
+  showDiskImage () {
+    const imagePath = path.join(__dirname, 'images/windows95.img')
+      .replace('app.asar', 'app.asar.unpacked')
 
-      window.emulator.save_state(async (error, newState) => {
-        if (error) {
-          console.log(error)
-          return
-        }
-
-        await fs.outputFile(STATE_PATH, Buffer.from(newState))
-
-        console.log(`Saved state to ${STATE_PATH}`)
-
-        resolve()
-      })
-    })
+    shell.showItemInFolder(imagePath)
   },
 
-  async restoreState () {
-    try {
-      window.emulator.restore_state(getState())
-    } catch (error) {
-      console.log(`Could not read state file. Maybe none exists?`, error)
-    }
-  },
-
-  quit () {
-    remote.app.quit()
-  }
+  quit: () => remote.app.quit()
 }
+
+ipcRenderer.on('ctrlaltdel', () => {
+  if (!window.emulator || !window.emulator.is_running) return
+
+  window.emulator.keyboard_send_scancodes([
+    0x1D, // ctrl
+    0x38, // alt
+    0x53, // delete
+
+    // break codes
+    0x1D | 0x80,
+    0x38 | 0x80,
+    0x53 | 0x80
+  ])
+})
+
+ipcRenderer.on('restart', () => {
+  if (!window.emulator || !window.emulator.is_running) return
+
+  window.emulator.restart()
+})
+
+ipcRenderer.on('disk-image', () => {
+  windows95.showDiskImage()
+})

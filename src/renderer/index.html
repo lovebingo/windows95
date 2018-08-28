@@ -11,6 +11,11 @@
 </head>
 
 <body class="paused">
+  <div id="status">
+    Disk: <span id="disk-status">Idle</span>
+    | CPU Speed: <span id="cpu-status">0</span>
+    | <a onclick="document.querySelector('#status').style.display='none'">Hide</a>
+  </div>
   <div id="buttons">
     <div id="start-buttons">
       <!-- <div class="btn" id="win98">Windows 98</div> -->
@@ -26,14 +31,15 @@
       <div class="btn" id="reset">Reset Machine & Delete State</div>
       <div class="btn" id="floppy">Insert Floppy Disk</div>
       <div class="btn" id="discard-state">Discard State & Boot From Scratch</div>
+      <div class="btn" id="show-disk-image">Show Disk Image</div>
       <input id="file-input" type='file'>
     </div>
     <div id="information">
       <p id="floppy-path"></p>
       <p>You can insert a floppy disk image with the ".img" format.</p>
       <p>
-        Boot the machine from scratch if you've inserted a new floppy disk to
-        make sure that Windows can load it.
+        Boot the machine from scratch if you've inserted a new floppy disk
+        or if you've changed the disk image.
       </p>
     </div>
   </div>
@@ -41,8 +47,8 @@
     <div style="white-space: pre; font: 14px monospace; line-height: 14px"></div>
     <canvas style="display: none"></canvas>
   </div>
-  <script>
-    require('./renderer.js')
+  <script type="module">
+    import("es6://renderer.js")
   </script>
 </body>
 
